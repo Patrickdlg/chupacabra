@@ -168,6 +168,11 @@ const syncForever = async(setPosts: any, setMessages: any, setSynced: any, setFo
       updatePosts()
       updateMessages()
     }
+    if(!res.data || !res.data.next_batch){
+      console.log(`Sync Request Returned No Batch: ${JSON.stringify(res)}`)
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      continue
+    }
     await Storage.set({key: sync_key, value: JSON.stringify({filter_id: filter_id, since: res.data.next_batch})})
   }
 }
