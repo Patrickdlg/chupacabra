@@ -7,12 +7,12 @@
   margin-left: auto;
 }
 
-.post-card{
-  max-width: 350px!important;
-}
-
 .shared-text{
   text-align: right;
   display: table;
   margin-left: auto;
+}
+
+.share-button{
+  float: right;
 }

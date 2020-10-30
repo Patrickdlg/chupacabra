@@ -1,0 +1,9 @@
+.post-composer-card{
+  max-width: 600px;
+  margin: auto;
+  padding: 20px;
+}
+
+.post-composer-button{
+  float: right;
+}

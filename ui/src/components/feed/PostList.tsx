@@ -7,7 +7,7 @@ import PostItem from './PostItem'
 const PostList: React.FC = () => {
   const posts = useRecoilValue(postList)
   return (
-    <IonGrid>
+    <IonGrid fixed>
       <IonRow>
         {posts.map(postId => <PostItem key={postId} postId={postId}/>)}
       </IonRow>

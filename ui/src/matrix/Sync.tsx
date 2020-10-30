@@ -1,6 +1,6 @@
 import axios from 'axios'
 import {useSetRecoilState} from 'recoil'
-import {postsState, syncState, PostType} from '../recoil/feed'
+import {syncState, useAddPosts, PostType} from '../recoil/feed'
 import {messagesState, MessageType} from '../recoil/chat'
 import {followedRoomsState} from '../recoil/rooms'
 import {VALIDATE_STATUS, MATRIX_CREDS_STORAGE_KEY,
@@ -10,7 +10,7 @@ import {Plugins} from '@capacitor/core'
 
 const {Storage} = Plugins
 
-const loadFromStorage = async(setPosts: any, setMessages: any, setSynced: any, setFollowedRooms: any) => {
+const loadFromStorage = async(addPosts: any, setMessages: any, setSynced: any, setFollowedRooms: any) => {
   const matrix_sync_key = (await Storage.get({key: MATRIX_SYNC_KEY})).value!
   if(!matrix_sync_key){return}
   const storage_keys: Array<string> = (await Storage.keys()).keys!
@@ -23,11 +23,7 @@ const loadFromStorage = async(setPosts: any, setMessages: any, setSynced: any, s
     const post = JSON.parse(stored.value!)
     if(post){cachedPosts.push(post)}
   }
-  setPosts((posts: any) =>{
-    var clone = new Map(posts)
-    cachedPosts.map(p => clone.set(p.id, p))
-    return clone
-  })
+  await addPosts(cachedPosts)
   setSynced(true)
   const cachedMessages = new Array<MessageType>()
   for(let i = 0, len = message_keys.length; i < len; i++){
@@ -62,8 +58,8 @@ const loadFromStorage = async(setPosts: any, setMessages: any, setSynced: any, s
   res.data && res.data.room && res.data.room.rooms && setFollowedRooms(new Set<string>(res.data.room.rooms))
 }
 
-const syncForever = async(setPosts: any, setMessages: any, setSynced: any, setFollowedRooms: any) => {
-  await loadFromStorage(setPosts, setMessages, setSynced, setFollowedRooms)
+const syncForever = async(addPosts: any, setMessages: any, setSynced: any, setFollowedRooms: any) => {
+  await loadFromStorage(addPosts, setMessages, setSynced, setFollowedRooms)
   while(true){
     const creds_string = await Storage.get({key: MATRIX_CREDS_STORAGE_KEY})
     const creds = JSON.parse(creds_string.value!)
@@ -114,9 +110,12 @@ const syncForever = async(setPosts: any, setMessages: any, setSynced: any, setFo
             uri: p.content.uri,
             room_name: p.room_name,
             id: p.event_id,
-            server_ts: p.origin_server_ts
+            server_ts: p.origin_server_ts,
+            pending: false,
+            origin_uri: p.content.origin_uri,
+            pending_send_room: ''
           }})
-        if(newPosts){
+        if(newPosts.length > 0){
           newPosts.forEach(async (p) => {
             await Storage.set({
                 key:`${CHUPA_POST_KEY}${p.id}`,
@@ -124,11 +123,7 @@ const syncForever = async(setPosts: any, setMessages: any, setSynced: any, setFo
               })
             return null
           })
-          setPosts((posts: any) =>{
-            var clone = new Map(posts)
-            newPosts.map(p => clone.set(p.id, p))
-            return clone
-          })
+          await addPosts(newPosts)
         }
         setSynced(true)
       }
@@ -178,9 +173,9 @@ const syncForever = async(setPosts: any, setMessages: any, setSynced: any, setFo
 }
 
 export const useSyncMatrix = () => {
-  const setPosts = useSetRecoilState(postsState)
   const setMessages = useSetRecoilState(messagesState)
   const setSynced = useSetRecoilState(syncState)
   const setFollowedRooms = useSetRecoilState(followedRoomsState)
-  return () => syncForever(setPosts, setMessages, setSynced, setFollowedRooms)
+  const addPosts = useAddPosts()
+  return () => syncForever(addPosts, setMessages, setSynced, setFollowedRooms)
 }

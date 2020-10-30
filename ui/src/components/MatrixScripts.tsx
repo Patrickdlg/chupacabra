@@ -17,9 +17,7 @@ const SyncScripts: React.FC = () => {
 }
 
 const LoggedInMatrixScripts: React.FC = () => {
-  const syncMatrix = useSyncMatrix()
   console.log('RENDERED LOGGEDIN COMPONENT')
-  syncMatrix()
   return (
     <>
       <SyncScripts />

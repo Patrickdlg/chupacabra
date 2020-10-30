@@ -1,0 +1,11 @@
+.room-alert{
+  --background: var(--ion-card-background);
+  --width: 350px;
+}
+
+.room-alert .alert-wrapper{
+  min-width: 350px;
+}
+
+.room-alert .select-interface-option {
+}

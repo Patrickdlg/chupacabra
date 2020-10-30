@@ -10,9 +10,10 @@ import docker
 import aiohttp
 
 class ChupaPost(reply.Response):
-    def __init__(self, data, title):
+    def __init__(self, data, title, origin_uri):
         self.data = data
         self.title = title
+        self.origin_uri = origin_uri
 
     async def get_content(self, client):
         r = await client.upload(lambda x, y: self.data, 'text/html', filename = 'chupapost.html')
@@ -21,6 +22,7 @@ class ChupaPost(reply.Response):
             'msgtype': 'm.chupacabra',
             'uri': r[0].content_uri,
             'body': self.title,
+            'origin_uri': self.origin_uri
         }
 
 @botkit.botkit_controller(bot_name='chupabot')
@@ -73,4 +75,4 @@ class ChupaBotController():
 
         html = self.docker.containers.run('singlefile', uri, auto_remove=True).strip()
         print('Sending reply...')
-        return ChupaPost(html, title)
+        return ChupaPost(html, title, uri)

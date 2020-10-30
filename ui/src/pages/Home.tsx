@@ -6,6 +6,7 @@ import SyncLoader from '../components/feed/SyncLoader'
 import FollowModal from '../components/feed/FollowModal'
 import FollowButton from '../components/feed/FollowButton'
 import NotFollowing from '../components/feed/NotFollowing'
+import ChupaPoster from '../components/feed/ChupaPoster'
 import './Home.css';
 
 const Home: React.FC = () => {
@@ -29,6 +30,7 @@ const Home: React.FC = () => {
           </IonHeader>
           <SyncLoader />
           <NotFollowing />
+          <ChupaPoster />
           <PostList />
         </IonContent>
         <FollowModal/>

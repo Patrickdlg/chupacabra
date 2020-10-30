@@ -1,5 +1,6 @@
-import { selectorFamily, selector, atom, useRecoilValue} from 'recoil'
+import { selectorFamily, selector, atom, useRecoilValue, useSetRecoilState} from 'recoil'
 import {useParams} from 'react-router-dom'
+import {sendPendingPost} from '../matrix/Post'
 
 export type PostType = {
   chupacabra_source: string,
@@ -7,7 +8,15 @@ export type PostType = {
   uri: string,
   room_name: string,
   id: string,
-  server_ts: number
+  server_ts: number,
+  pending: boolean,
+  pending_send_room: string,
+  origin_uri: string
+}
+
+export type PendingPostKeyType = {
+  title: string,
+  uri: string
 }
 
 export const followModalState = atom<boolean>({
@@ -20,6 +29,43 @@ export const postsState = atom<Map<string, PostType>>({
   default: new Map<string, PostType>()
 })
 
+export const useAddPosts = () => {
+  const setPosts = useSetRecoilState(postsState)
+  const addPosts = async (newPosts: Array<PostType>) => {
+    const postsToSend = new Array<{post: PostType, room: string}>()
+    setPosts((oldMap: Map<string,PostType>)=>{
+      const clone = new Map<string, PostType>(oldMap)
+      const pendingPostThing: any = {}
+      Array.from(clone.values()).filter(post => post.pending).forEach((pending: PostType) => {
+        pendingPostThing[pending.title] = pendingPostThing[pending.title] || {}
+        pendingPostThing[pending.title][pending.origin_uri] = pendingPostThing[pending.title][pending.origin_uri]
+          ? pendingPostThing[pending.title][pending.origin_uri].push(pending.id)
+          : [pending.id]
+      });
+      newPosts.forEach(post => {
+        //Only remove pending posts when a corresponding NON-pending post comes in
+        if(!post.pending){
+          const pendingIds: Array<string> = pendingPostThing[post.title]
+            ?  pendingPostThing[post.title][post.origin_uri] || new Array<string>()
+            : new Array<string>()
+          pendingIds.forEach(id => {
+            const pendingPost = clone.get(id)
+            pendingPost && postsToSend.push({
+              post: post,
+              room: pendingPost.pending_send_room
+            })
+            clone.delete(id)
+          })
+        }
+        clone.set(post.id, post)
+      })
+      return clone
+    })
+    await Promise.all(postsToSend.map(item => sendPendingPost(item.post, item.room)))
+  }
+  return addPosts
+}
+
 export const postState = selectorFamily<PostType, string>({
   key: 'Post',
   get: (postId) => ({get}) => {
@@ -30,7 +76,10 @@ export const postState = selectorFamily<PostType, string>({
       uri: '',
       room_name: '',
       id: '',
-      server_ts: 0
+      server_ts: 0,
+      pending: false,
+      origin_uri: '',
+      pending_send_room: ''
     }
     return post
   }
