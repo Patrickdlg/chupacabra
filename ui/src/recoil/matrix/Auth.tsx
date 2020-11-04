@@ -1,5 +1,5 @@
 import { atom } from 'recoil'
-import {localStorageEffect} from '../Utils'
+import {localStorageEffect} from '../AtomEffects'
 
 export type MatrixCredentials = {
   homeserver: string | null,

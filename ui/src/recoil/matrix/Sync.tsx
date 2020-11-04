@@ -1,5 +1,5 @@
 import { atom, atomFamily } from 'recoil'
-import {localStorageEffect} from '../Utils'
+import {localStorageEffect} from '../AtomEffects'
 
 export type RoomType = {
   name: string,
