@@ -1,7 +1,7 @@
 import { IonList, IonItem, IonInput, IonText, IonLabel, IonButton} from '@ionic/react';
 import React, { useState } from 'react';
 import {useRecoilValue} from 'recoil'
-import {loginErrorState} from '../../recoil/auth'
+import {loginErrorState} from '../../recoil/matrix/Auth'
 import {useLoginWithPassword} from '../../matrix/Auth'
 
 const validURL = (url: string) => {

@@ -1,8 +1,7 @@
 import React, {Suspense} from 'react';
 import { useRecoilValue } from 'recoil'
-import {loggedInState} from '../recoil/auth'
+import { credentialsState } from '../recoil/matrix/Auth'
 import {joinedRoomsState} from '../recoil/rooms'
-import {useLoginWithCreds} from '../matrix/Auth'
 import {useSyncMatrix} from '../matrix/Sync'
 
 const RoomLoader: React.FC = () => {
@@ -29,9 +28,8 @@ const LoggedInMatrixScripts: React.FC = () => {
 }
 
 const MatrixScripts: React.FC = () => {
-  const wasLetIn = useRecoilValue(loggedInState)
-  const loginWithCreds = useLoginWithCreds()
-  loginWithCreds()
+  const credentials = useRecoilValue(credentialsState)
+  const wasLetIn = credentials
   return wasLetIn? <LoggedInMatrixScripts /> : null
 }
 

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {Suspense} from 'react';
 import { IonApp } from '@ionic/react';
 import {RecoilRoot} from 'recoil'
 import AppRouter from './components/AppRouter'
@@ -26,9 +26,13 @@ import './theme/variables.css';
 const App: React.FC = () => (
   <RecoilRoot>
     <IonApp>
-      <AppRouter />
+      <Suspense fallback={null}>
+        <AppRouter />
+      </Suspense>
     </IonApp>
-    <MatrixScripts />
+    <Suspense fallback={null}>
+      <MatrixScripts />
+    </Suspense>
   </RecoilRoot>
 )
 
